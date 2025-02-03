@@ -31,13 +31,14 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	float AttackCooldown;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	float Damage;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Attack();
 	
-	void TryAttack(FVector ShootDirection);
+	virtual void TryAttack(FVector ShootDirection);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual float GetSpeedModifier();

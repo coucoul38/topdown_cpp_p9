@@ -43,6 +43,9 @@ void ACustomPlayerController::RotatePlayerToMouse()
 			FRotator NewRotation = PlayerDirection.Rotation();
 			ControlledPawn->SetActorRotation(NewRotation);
 		}
+
+		// Draw the raycast for debugging
+		DrawDebugPoint(GetWorld(), HitResult.Location, 10.0f, FColor::Red, false, 1.0f);
 	}
 }
 
