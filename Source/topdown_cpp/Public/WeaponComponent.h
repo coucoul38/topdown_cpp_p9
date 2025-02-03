@@ -36,6 +36,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Attack();
+	
+	void TryAttack(FVector ShootDirection);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual float GetSpeedModifier();
