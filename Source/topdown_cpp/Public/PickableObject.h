@@ -26,6 +26,10 @@ class TOPDOWN_CPP_API IPickableObject
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	bool pickedUp = false;
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Pickable")
 	void OnPickUp(ACustomPlayerController* player);
+
+	void OnDrop(ACustomPlayerController* player);
 };

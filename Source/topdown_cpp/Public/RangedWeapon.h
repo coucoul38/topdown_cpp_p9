@@ -41,4 +41,5 @@ public:
 
 	// Implemented from IPickableObject
 	virtual void OnPickUp_Implementation(ACustomPlayerController* player);
+	virtual void OnDrop_Implementation(ACustomPlayerController* player);
 };

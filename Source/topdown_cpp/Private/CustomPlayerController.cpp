@@ -55,39 +55,49 @@ void ACustomPlayerController::RotatePlayerToMouse(FHitResult HitResult)
 void ACustomPlayerController::CheckPickupObject(FHitResult HitResult) {
 	if (HitResult.bBlockingHit)
 	{
-		if (lastPickableObject != Cast<IPickableObject>(HitResult.GetActor())) {
-			// remove outline from last object
-			TArray<USceneComponent*> ChildrenComponents;
-			Cast<AActor>(lastPickableObject)->GetRootComponent()->GetChildrenComponents(true, ChildrenComponents); // ça crash ici
-			for (USceneComponent* ChildComponent : ChildrenComponents)
-			{
-				if (UPrimitiveComponent* PrimitiveComp = Cast<UPrimitiveComponent>(ChildComponent))
+		// If hitting a different object, remove outline from last one
+		if (lastPickableObject != nullptr) {
+			if ((HitResult.Location - GetPawn()->GetActorLocation()).Length() >= PickupDistance || lastPickableObject != HitResult.GetActor()) {
+				//if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Pickable UnHovered"))); }
+				TArray<USceneComponent*> ChildrenComponents;
+				lastPickableObject->GetRootComponent()->GetChildrenComponents(true, ChildrenComponents); // ça crash ici
+				for (USceneComponent* ChildComponent : ChildrenComponents)
 				{
-					// Enable Custom Depth for the component
-					PrimitiveComp->SetRenderCustomDepth(true);
+					if (UPrimitiveComponent* PrimitiveComp = Cast<UPrimitiveComponent>(ChildComponent))
+					{
+						// Enable Custom Depth for the component
+						PrimitiveComp->SetRenderCustomDepth(false);
+					}
 				}
+				lastPickableObject = nullptr;
 			}
 		}
+
+
 		if (Cast<IPickableObject>(HitResult.GetActor())) {
+			//if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Pickable Hovered"))); }
+
 			// store object
-			lastPickableObject = Cast<IPickableObject>(HitResult.GetActor());
+			lastPickableObject = HitResult.GetActor();
 
-			// set outline on object
-			TArray<USceneComponent*> ChildrenComponents;
-			HitResult.GetComponent()->GetChildrenComponents(true, ChildrenComponents);
-
-			for (USceneComponent* ChildComponent : ChildrenComponents)
+			if ((HitResult.Location - GetPawn()->GetActorLocation()).Length() < PickupDistance)
 			{
-				if (UPrimitiveComponent* PrimitiveComp = Cast<UPrimitiveComponent>(ChildComponent))
+				// set outline on object
+				TArray<USceneComponent*> ChildrenComponents;
+				HitResult.GetComponent()->GetChildrenComponents(true, ChildrenComponents);
+
+				//if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Pickable Picked"))); }
+				IPickableObject::Execute_OnPickUp(HitResult.GetActor(), this);
+				for (USceneComponent* ChildComponent : ChildrenComponents)
 				{
-					// Enable Custom Depth for the component
-					PrimitiveComp->SetRenderCustomDepth(true);
+					if (UPrimitiveComponent* PrimitiveComp = Cast<UPrimitiveComponent>(ChildComponent))
+					{
+						// Enable Custom Depth for the component
+						PrimitiveComp->SetRenderCustomDepth(true);
+					}
 				}
 			}
 		}
-
-		// Draw the raycast for debugging
-		DrawDebugPoint(GetWorld(), HitResult.Location, 10.0f, FColor::Red, false, 1.0f);
 	}
 }
 
@@ -154,6 +164,15 @@ void ACustomPlayerController::TryAttack(const FInputActionValue& Value)
 	else
 	{
 		UE_LOG(LogTemp, Log, TEXT("Missed"));
+	}
+}
+
+void ACustomPlayerController::DropWeapon()
+{
+	if (Weapon != nullptr)
+	{
+		//Cast<IPickableObject>(Weapon)->OnDrop(this);
+		Weapon = nullptr;
 	}
 }
 

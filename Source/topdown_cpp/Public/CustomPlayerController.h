@@ -22,9 +22,11 @@ class TOPDOWN_CPP_API ACustomPlayerController : public APlayerController
 	void Tick(float DeltaSeconds);
 	FHitResult ShootRaycast();
 
-	IPickableObject* lastPickableObject;
+	AActor* lastPickableObject;
 	void CheckPickupObject(FHitResult HitResult);
 	void RotatePlayerToMouse(FHitResult HitResult);
+
+	AWeaponComponent* weaponComponent;
 
 protected:
 	virtual void SetupInputComponent() override;
@@ -46,8 +48,14 @@ protected:
 	UPROPERTY()
 	AWeaponComponent* Weapon;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	int PickupDistance = 100;
+
 	UPROPERTY()
 	FVector PlayerDirection;
+
+	UFUNCTION()
+	void DropWeapon();
 
 	void WhenMoveInput(const FInputActionValue& Value);
 };

@@ -51,4 +51,13 @@ void ARangedWeapon::OnPickUp_Implementation(ACustomPlayerController* player) {
 	// Implement the pick-up logic here
 	UE_LOG(LogTemp, Log, TEXT("Picked up ranged weapon"));
 	// add the weapon to the player's inventory or equip it
+	pickedUp = true;
+}
+
+void ARangedWeapon::OnDrop_Implementation(ACustomPlayerController* player) {
+	// Implement the drop logic here
+	UE_LOG(LogTemp, Log, TEXT("Dropped ranged weapon"));
+	// remove the weapon from the player's inventory or unequip it
+	pickedUp = false;
+	//this.parent = nullptr;
 }
