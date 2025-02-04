@@ -45,6 +45,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ShootAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* InteractAction;
+
 	UPROPERTY()
 	AWeaponComponent* Weapon;
 
@@ -58,4 +61,6 @@ protected:
 	void DropWeapon();
 
 	void WhenMoveInput(const FInputActionValue& Value);
+
+	void TryPickupObject();
 };

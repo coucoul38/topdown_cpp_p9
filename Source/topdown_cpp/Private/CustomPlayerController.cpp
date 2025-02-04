@@ -75,13 +75,11 @@ void ACustomPlayerController::CheckPickupObject(FHitResult HitResult) {
 
 
 		if (Cast<IPickableObject>(HitResult.GetActor())) {
-			//if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Pickable Hovered"))); }
-
-			// store object
-			lastPickableObject = HitResult.GetActor();
-
 			if ((HitResult.Location - GetPawn()->GetActorLocation()).Length() < PickupDistance)
 			{
+				// store object
+				lastPickableObject = HitResult.GetActor();
+
 				// set outline on object
 				TArray<USceneComponent*> ChildrenComponents;
 				HitResult.GetComponent()->GetChildrenComponents(true, ChildrenComponents);
@@ -164,6 +162,13 @@ void ACustomPlayerController::TryAttack(const FInputActionValue& Value)
 	else
 	{
 		UE_LOG(LogTemp, Log, TEXT("Missed"));
+	}
+}
+
+void ACustomPlayerController::TryPickupObject() {
+	if (lastPickableObject != nullptr) {
+		if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("Try pickup"))); }
+		IPickableObject::Execute_OnPickUp(lastPickableObject, this);
 	}
 }
 
