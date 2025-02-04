@@ -11,6 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "EnhancedInputSubsystems.h"
+#include "PickableObject.h"
 #include "Engine/LocalPlayer.h"
 
 ACustomPlayerController::ACustomPlayerController()
@@ -22,14 +23,19 @@ ACustomPlayerController::ACustomPlayerController()
 void ACustomPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	RotatePlayerToMouse();
+	FHitResult hit = ShootRaycast();
+	RotatePlayerToMouse(hit);
+	CheckPickupObject(hit);
 }
 
-void ACustomPlayerController::RotatePlayerToMouse()
-{
+FHitResult ACustomPlayerController::ShootRaycast() {
 	FHitResult HitResult;
 	GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
+	return HitResult;
+}
 
+void ACustomPlayerController::RotatePlayerToMouse(FHitResult HitResult)
+{
 	if (HitResult.bBlockingHit)
 	{
 		APawn* ControlledPawn = GetPawn();
@@ -42,6 +48,42 @@ void ACustomPlayerController::RotatePlayerToMouse()
 
 			FRotator NewRotation = PlayerDirection.Rotation();
 			ControlledPawn->SetActorRotation(NewRotation);
+		}
+	}
+}
+
+void ACustomPlayerController::CheckPickupObject(FHitResult HitResult) {
+	if (HitResult.bBlockingHit)
+	{
+		if (lastPickableObject != Cast<IPickableObject>(HitResult.GetActor())) {
+			// remove outline from last object
+			TArray<USceneComponent*> ChildrenComponents;
+			Cast<AActor>(lastPickableObject)->GetRootComponent()->GetChildrenComponents(true, ChildrenComponents); // ça crash ici
+			for (USceneComponent* ChildComponent : ChildrenComponents)
+			{
+				if (UPrimitiveComponent* PrimitiveComp = Cast<UPrimitiveComponent>(ChildComponent))
+				{
+					// Enable Custom Depth for the component
+					PrimitiveComp->SetRenderCustomDepth(true);
+				}
+			}
+		}
+		if (Cast<IPickableObject>(HitResult.GetActor())) {
+			// store object
+			lastPickableObject = Cast<IPickableObject>(HitResult.GetActor());
+
+			// set outline on object
+			TArray<USceneComponent*> ChildrenComponents;
+			HitResult.GetComponent()->GetChildrenComponents(true, ChildrenComponents);
+
+			for (USceneComponent* ChildComponent : ChildrenComponents)
+			{
+				if (UPrimitiveComponent* PrimitiveComp = Cast<UPrimitiveComponent>(ChildComponent))
+				{
+					// Enable Custom Depth for the component
+					PrimitiveComp->SetRenderCustomDepth(true);
+				}
+			}
 		}
 
 		// Draw the raycast for debugging

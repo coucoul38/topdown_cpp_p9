@@ -7,6 +7,8 @@
 #include "GameFramework/PlayerController.h"
 #include "InputMappingContext.h"
 #include "WeaponComponent.h"
+#include "PickableObject.h"
+
 #include "CustomPlayerController.generated.h"
 
 
@@ -18,7 +20,11 @@ class TOPDOWN_CPP_API ACustomPlayerController : public APlayerController
 	
 	ACustomPlayerController();
 	void Tick(float DeltaSeconds);
-	void RotatePlayerToMouse();
+	FHitResult ShootRaycast();
+
+	IPickableObject* lastPickableObject;
+	void CheckPickupObject(FHitResult HitResult);
+	void RotatePlayerToMouse(FHitResult HitResult);
 
 protected:
 	virtual void SetupInputComponent() override;

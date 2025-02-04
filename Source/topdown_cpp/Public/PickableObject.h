@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+//#include "CustomPlayerController.h"
+// forward declaration
+class ACustomPlayerController;
+
 #include "PickableObject.generated.h"
 
 // This class does not need to be modified.
@@ -23,5 +27,5 @@ class TOPDOWN_CPP_API IPickableObject
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Pickable")
-	void PickUp();
+	void OnPickUp(ACustomPlayerController* player);
 };

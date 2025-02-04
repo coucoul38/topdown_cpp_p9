@@ -4,20 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "WeaponComponent.h"
+#include "PickableObject.h"
 #include "RangedWeapon.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class TOPDOWN_CPP_API ARangedWeapon : public AWeaponComponent
+class TOPDOWN_CPP_API ARangedWeapon : public AWeaponComponent, public IPickableObject
 {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	int MagSize;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon")
 	int CurrentAmmoInMag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
@@ -37,4 +38,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Reload();
+
+	// Implemented from IPickableObject
+	virtual void OnPickUp_Implementation(ACustomPlayerController* player);
 };

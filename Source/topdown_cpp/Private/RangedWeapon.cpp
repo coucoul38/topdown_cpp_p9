@@ -45,3 +45,10 @@ void ARangedWeapon::Reload()
 {
 	CurrentAmmoInMag = MagSize;
 }
+
+
+void ARangedWeapon::OnPickUp_Implementation(ACustomPlayerController* player) {
+	// Implement the pick-up logic here
+	UE_LOG(LogTemp, Log, TEXT("Picked up ranged weapon"));
+	// add the weapon to the player's inventory or equip it
+}
