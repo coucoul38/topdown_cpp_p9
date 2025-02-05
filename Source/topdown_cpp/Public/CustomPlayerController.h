@@ -8,6 +8,7 @@
 #include "InputMappingContext.h"
 #include "WeaponComponent.h"
 #include "PickableObject.h"
+#include "GameFramework/SpringArmComponent.h"
 
 #include "CustomPlayerController.generated.h"
 
@@ -19,6 +20,8 @@ class TOPDOWN_CPP_API ACustomPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 	ACustomPlayerController();
+	void BeginPlay() override;
+	void GetSpringArmComponent();
 	void Tick(float DeltaSeconds);
 	FHitResult ShootRaycast();
 
@@ -48,6 +51,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* InteractAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ZoomAction;
+	
 	UPROPERTY()
 	AWeaponComponent* Weapon;
 
@@ -57,10 +63,14 @@ protected:
 	UPROPERTY()
 	FVector PlayerDirection;
 
+	class USpringArmComponent* CameraBoom;
+
 	UFUNCTION()
 	void DropWeapon();
 
 	void WhenMoveInput(const FInputActionValue& Value);
+
+	void HandleCameraZoom(const FInputActionValue& Value);
 
 	void Interact();
 public:

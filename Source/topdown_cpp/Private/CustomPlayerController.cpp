@@ -20,6 +20,27 @@ ACustomPlayerController::ACustomPlayerController()
 	DefaultMouseCursor = EMouseCursor::Default;
 }
 
+void ACustomPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	GetSpringArmComponent();
+}
+
+void ACustomPlayerController::GetSpringArmComponent()
+{
+	APawn* ControlledPawn = GetPawn();
+	if (ControlledPawn)
+	{
+		USpringArmComponent* SpringArmComponent = ControlledPawn->FindComponentByClass<USpringArmComponent>();
+		if (SpringArmComponent)
+		{
+			// Successfully retrieved the SpringArmComponent
+			CameraBoom = SpringArmComponent;
+			if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Setup camera boom"))); }
+		}
+	}
+}
+
 void ACustomPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -72,7 +93,7 @@ void ACustomPlayerController::CheckPickupObject(FHitResult HitResult) {
 			}
 		}
 
-		if (Cast<IPickableObject>(HitResult.GetActor())) {
+		if (Cast<IPickableObject>(HitResult.GetActor()) && Cast<IPickableObject>(HitResult.GetActor())->pickedUp == false) {
 			if ((HitResult.Location - GetPawn()->GetActorLocation()).Length() < PickupDistance)
 			{
 				// store object
@@ -114,7 +135,7 @@ void ACustomPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACustomPlayerController::WhenMoveInput); 
 		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &ACustomPlayerController::TryAttack);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ACustomPlayerController::Interact);
-		//if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Binded Action"))); }
+		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ACustomPlayerController::HandleCameraZoom);
 	}
 	else
 	{
@@ -162,6 +183,27 @@ void ACustomPlayerController::TryAttack(const FInputActionValue& Value)
 	}
 }
 
+void ACustomPlayerController::HandleCameraZoom(const FInputActionValue& Value)
+{
+	if (CameraBoom)
+	{
+		float ZoomValue = Value.Get<float>();
+		CameraBoom->TargetArmLength = FMath::Clamp(CameraBoom->TargetArmLength + ZoomValue * -100.0f, 300.0f, 2000.0f);
+	}
+}
+
+void ACustomPlayerController::WhenMoveInput(const FInputActionValue& Value)
+{
+	//if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("MoveInput"))); }
+	APawn* ControlledPawn = GetPawn();
+	if (ControlledPawn != nullptr)
+	{
+		FVector2D MovementVector = Value.Get<FVector2D>();
+		FVector WorldDirection = FVector(MovementVector.X, MovementVector.Y, 0.f);
+		ControlledPawn->AddMovementInput(WorldDirection, 1.0f, false);
+	}
+}
+
 void ACustomPlayerController::Interact() {
 	if (lastPickableObject != nullptr) {
 		if(lastPickableObject->Implements<UPickableObject>())
@@ -180,18 +222,6 @@ void ACustomPlayerController::DropWeapon()
 	if (Weapon != nullptr)
 	{
 		Weapon = nullptr;
-	}
-}
-
-void ACustomPlayerController::WhenMoveInput(const FInputActionValue& Value)
-{
-	//if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("MoveInput"))); }
-	APawn* ControlledPawn = GetPawn();
-	if (ControlledPawn != nullptr)
-	{
-		FVector2D MovementVector = Value.Get<FVector2D>();
-		FVector WorldDirection = FVector(MovementVector.X, MovementVector.Y, 0.f);
-		ControlledPawn->AddMovementInput(WorldDirection, 1.0f, false);
 	}
 }
 

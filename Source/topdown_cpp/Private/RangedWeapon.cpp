@@ -51,9 +51,11 @@ void ARangedWeapon::Reload()
 
 void ARangedWeapon::OnPickUp_Implementation(ACustomPlayerController* player) {
 	// Implement the pick-up logic here
+	//Super::OnPickUp_Implementation(player);
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Ranged weapon pickup"))); }
 	// add the weapon to the player's inventory or equip it
-	player->SetWeapon(this);
+	if(!pickedUp)
+		player->SetWeapon(this);
 	pickedUp = true;
 }
 
