@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/Character.h"
+#include "Perception/AIPerceptionTypes.h"
 #include "EnemyAI.generated.h"
 
 UCLASS()
@@ -19,6 +21,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere)
+	UAIPerceptionComponent* PerceptionComponent;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -26,4 +31,14 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION()
+	void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
+	UBlackboardComponent* GetBlackboardComponent() const;
+	TArray<FVector> GetPatrolPoints();
+	void SetPatrolPoints();
+
+	UPROPERTY(EditInstanceOnly, Category = "AI", meta = (MakeEditWidget = true))
+	TArray<FVector> PatrolPoints;
+	
+	TArray<FVector> PatrolPointsWorld;
 };
