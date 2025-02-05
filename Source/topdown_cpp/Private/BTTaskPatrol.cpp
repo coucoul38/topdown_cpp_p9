@@ -27,12 +27,8 @@ EBTNodeResult::Type UBTTaskPatrol::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 					FVector PatrolLocation = PatrolPoints[PatrolIndex];
 
 					BlackboardComp->SetValueAsVector(PatrolLocationKey.SelectedKeyName, PatrolLocation);
-					BlackboardComp->SetValueAsInt(PatrolIndexKey.SelectedKeyName, PatrolIndex);
-
-					if (GEngine)
-					{
-						GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Patrol Location: %s"), *PatrolLocation.ToString()));
-					}
+					BlackboardComp->SetValueAsInt(PatrolIndexKey.SelectedKeyName, PatrolIndex);	
+					
 					return EBTNodeResult::Succeeded;
 				}
 			}
