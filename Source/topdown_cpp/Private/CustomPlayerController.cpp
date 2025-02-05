@@ -6,7 +6,6 @@
 #include <string>
 
 #include "GameFramework/Pawn.h"
-#include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Engine/World.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
@@ -148,39 +147,39 @@ void ACustomPlayerController::TryAttack(const FInputActionValue& Value)
 {
 	if (Weapon != nullptr)
 	{
-		if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Shoot"))); }
+		//if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Shoot"))); }
 		Weapon->TryAttack(PlayerDirection);
 	}
 
-	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Shoot"))); }
-	
-	FHitResult HitResult;
-	APawn* ControlledPawn = GetPawn();
-	FVector StartLocation = ControlledPawn->GetActorLocation();
-	FVector EndLocation = StartLocation + (PlayerDirection * 1000.0f); // Adjust the range as needed
-
-	FCollisionQueryParams CollisionParams;
-	CollisionParams.AddIgnoredActor(this); // Ignore the weapon itself
-
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, CollisionParams);
-	
-	// Draw the raycast for debugging
-	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Green, false, 1.0f, 0, 1.0f);
-	
-	if (bHit)
-	{
-		// Process the hit result, e.g., apply damage to the hit actor
-		AActor* HitActor = HitResult.GetActor();
-		if (HitActor)
-		{
-			// Apply damage or other effects to the hit actor
-			UE_LOG(LogTemp, Log, TEXT("Hit Actor: %s"), *HitActor->GetName());
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Missed"));
-	}
+	// if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Shoot"))); }
+	//
+	// FHitResult HitResult;
+	// APawn* ControlledPawn = GetPawn();
+	// FVector StartLocation = ControlledPawn->GetActorLocation();
+	// FVector EndLocation = StartLocation + (PlayerDirection * 1000.0f); // Adjust the range as needed
+	//
+	// FCollisionQueryParams CollisionParams;
+	// CollisionParams.AddIgnoredActor(this); // Ignore the weapon itself
+	//
+	// bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, CollisionParams);
+	//
+	// // Draw the raycast for debugging
+	// DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Green, false, 1.0f, 0, 1.0f);
+	//
+	// if (bHit)
+	// {
+	// 	// Process the hit result, e.g., apply damage to the hit actor
+	// 	AActor* HitActor = HitResult.GetActor();
+	// 	if (HitActor)
+	// 	{
+	// 		// Apply damage or other effects to the hit actor
+	// 		UE_LOG(LogTemp, Log, TEXT("Hit Actor: %s"), *HitActor->GetName());
+	// 	}
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Log, TEXT("Missed"));
+	// }
 }
 
 void ACustomPlayerController::HandleCameraZoom(const FInputActionValue& Value)
@@ -225,8 +224,9 @@ void ACustomPlayerController::DropWeapon()
 	}
 }
 
-void ACustomPlayerController::SetWeapon(AWeaponComponent* weapon)
+void ACustomPlayerController::SetWeapon(AWeaponComponent* newWeapon)
 {
+	Weapon = newWeapon;
 	APawn* ControlledPawn = GetPawn();
 	if (ControlledPawn)
 	{
@@ -236,7 +236,7 @@ void ACustomPlayerController::SetWeapon(AWeaponComponent* weapon)
 		{
 			if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find player Mesh"))); }
 			FName WeaponAttachSocketName = TEXT("WeaponSocket");
-			weapon->AttachToComponent(MeshComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
+			newWeapon->AttachToComponent(MeshComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
 		}
 	}
 }
