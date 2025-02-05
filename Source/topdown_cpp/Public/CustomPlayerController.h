@@ -62,5 +62,5 @@ protected:
 
 	void WhenMoveInput(const FInputActionValue& Value);
 
-	void TryPickupObject();
+	void Interact();
 };

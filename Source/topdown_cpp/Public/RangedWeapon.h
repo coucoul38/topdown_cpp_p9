@@ -11,7 +11,7 @@
  * 
  */
 UCLASS()
-class TOPDOWN_CPP_API ARangedWeapon : public AWeaponComponent, public IPickableObject
+class TOPDOWN_CPP_API ARangedWeapon : public AWeaponComponent
 {
 	GENERATED_BODY()
 public:
@@ -40,6 +40,6 @@ public:
 	virtual void Reload();
 
 	// Implemented from IPickableObject
-	virtual void OnPickUp_Implementation(ACustomPlayerController* player);
-	virtual void OnDrop_Implementation(ACustomPlayerController* player);
+	virtual void OnPickUp_Implementation(ACustomPlayerController* player) override;
+	virtual void OnDrop_Implementation(ACustomPlayerController* player) override;
 };

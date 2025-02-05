@@ -58,9 +58,8 @@ void ACustomPlayerController::CheckPickupObject(FHitResult HitResult) {
 		// If hitting a different object, remove outline from last one
 		if (lastPickableObject != nullptr) {
 			if ((HitResult.Location - GetPawn()->GetActorLocation()).Length() >= PickupDistance || lastPickableObject != HitResult.GetActor()) {
-				//if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Pickable UnHovered"))); }
 				TArray<USceneComponent*> ChildrenComponents;
-				lastPickableObject->GetRootComponent()->GetChildrenComponents(true, ChildrenComponents); // ça crash ici
+				lastPickableObject->GetRootComponent()->GetChildrenComponents(true, ChildrenComponents);
 				for (USceneComponent* ChildComponent : ChildrenComponents)
 				{
 					if (UPrimitiveComponent* PrimitiveComp = Cast<UPrimitiveComponent>(ChildComponent))
@@ -73,7 +72,6 @@ void ACustomPlayerController::CheckPickupObject(FHitResult HitResult) {
 			}
 		}
 
-
 		if (Cast<IPickableObject>(HitResult.GetActor())) {
 			if ((HitResult.Location - GetPawn()->GetActorLocation()).Length() < PickupDistance)
 			{
@@ -84,8 +82,6 @@ void ACustomPlayerController::CheckPickupObject(FHitResult HitResult) {
 				TArray<USceneComponent*> ChildrenComponents;
 				HitResult.GetComponent()->GetChildrenComponents(true, ChildrenComponents);
 
-				//if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Pickable Picked"))); }
-				IPickableObject::Execute_OnPickUp(HitResult.GetActor(), this);
 				for (USceneComponent* ChildComponent : ChildrenComponents)
 				{
 					if (UPrimitiveComponent* PrimitiveComp = Cast<UPrimitiveComponent>(ChildComponent))
@@ -116,7 +112,8 @@ void ACustomPlayerController::SetupInputComponent()
 	{
 		// Setup mouse input events
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACustomPlayerController::WhenMoveInput); 
-		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &ACustomPlayerController::TryAttack); 
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &ACustomPlayerController::TryAttack);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ACustomPlayerController::Interact);
 		//if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Binded Action"))); }
 	}
 	else
@@ -165,10 +162,16 @@ void ACustomPlayerController::TryAttack(const FInputActionValue& Value)
 	}
 }
 
-void ACustomPlayerController::TryPickupObject() {
+void ACustomPlayerController::Interact() {
 	if (lastPickableObject != nullptr) {
-		if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("Try pickup"))); }
-		IPickableObject::Execute_OnPickUp(lastPickableObject, this);
+		if(lastPickableObject->Implements<UPickableObject>())
+		{
+			IPickableObject::Execute_OnPickUp(lastPickableObject, this);
+			if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Object implements interface"))); }
+		} else
+		{
+			if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Object doesn't implement pickable object interface"))); }
+		}
 	}
 }
 
@@ -176,7 +179,6 @@ void ACustomPlayerController::DropWeapon()
 {
 	if (Weapon != nullptr)
 	{
-		//Cast<IPickableObject>(Weapon)->OnDrop(this);
 		Weapon = nullptr;
 	}
 }

@@ -71,3 +71,17 @@ float AWeaponComponent::GetDamage()
 	return Damage;
 }
 
+void AWeaponComponent::OnPickUp_Implementation(ACustomPlayerController* player) {
+	// Implement the pick-up logic here
+	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Weapon pickup"))); }
+	// add the weapon to the player's inventory or equip it
+	pickedUp = true;
+}
+
+void AWeaponComponent::OnDrop_Implementation(ACustomPlayerController* player) {
+	// Implement the drop logic here
+	UE_LOG(LogTemp, Log, TEXT("Dropped ranged weapon"));
+	// remove the weapon from the player's inventory or unequip it
+	pickedUp = false;
+	//this.parent = nullptr;
+}

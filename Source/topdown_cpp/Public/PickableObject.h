@@ -31,5 +31,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Pickable")
 	void OnPickUp(ACustomPlayerController* player);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Pickable")
 	void OnDrop(ACustomPlayerController* player);
 };
