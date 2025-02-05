@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PickableObject.h"
 #include "GameFramework/Actor.h"
 #include "WeaponComponent.generated.h"
 
 UCLASS()
-class TOPDOWN_CPP_API AWeaponComponent : public AActor
+class TOPDOWN_CPP_API AWeaponComponent : public AActor, public IPickableObject
 {
 	GENERATED_BODY()
 	
@@ -31,13 +32,14 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	float AttackCooldown;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	float Damage;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Attack();
 	
-	void TryAttack(FVector ShootDirection);
+	virtual void TryAttack(FVector ShootDirection);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual float GetSpeedModifier();
@@ -47,4 +49,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual float GetDamage();
+
+	// Implemented from IPickableObject
+	virtual void OnPickUp_Implementation(ACustomPlayerController* player) override;
+	virtual void OnDrop_Implementation(ACustomPlayerController* player) override;
 };

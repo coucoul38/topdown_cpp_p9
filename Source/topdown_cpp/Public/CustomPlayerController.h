@@ -7,6 +7,9 @@
 #include "GameFramework/PlayerController.h"
 #include "InputMappingContext.h"
 #include "WeaponComponent.h"
+#include "PickableObject.h"
+#include "GameFramework/SpringArmComponent.h"
+
 #include "CustomPlayerController.generated.h"
 
 
@@ -17,8 +20,16 @@ class TOPDOWN_CPP_API ACustomPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 	ACustomPlayerController();
+	void BeginPlay() override;
+	void GetSpringArmComponent();
 	void Tick(float DeltaSeconds);
-	void RotatePlayerToMouse();
+	FHitResult ShootRaycast();
+
+	AActor* lastPickableObject;
+	void CheckPickupObject(FHitResult HitResult);
+	void RotatePlayerToMouse(FHitResult HitResult);
+
+	AWeaponComponent* weaponComponent;
 
 protected:
 	virtual void SetupInputComponent() override;
@@ -37,11 +48,31 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ShootAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* InteractAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ZoomAction;
+	
 	UPROPERTY()
 	AWeaponComponent* Weapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	int PickupDistance = 100;
 
 	UPROPERTY()
 	FVector PlayerDirection;
 
+	class USpringArmComponent* CameraBoom;
+
+	UFUNCTION()
+	void DropWeapon();
+
 	void WhenMoveInput(const FInputActionValue& Value);
+
+	void HandleCameraZoom(const FInputActionValue& Value);
+
+	void Interact();
+public:
+	void SetWeapon(AWeaponComponent* weapon);
 };

@@ -11,6 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "EnhancedInputSubsystems.h"
+#include "PickableObject.h"
 #include "Engine/LocalPlayer.h"
 
 ACustomPlayerController::ACustomPlayerController()
@@ -19,17 +20,43 @@ ACustomPlayerController::ACustomPlayerController()
 	DefaultMouseCursor = EMouseCursor::Default;
 }
 
+void ACustomPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	GetSpringArmComponent();
+}
+
+void ACustomPlayerController::GetSpringArmComponent()
+{
+	APawn* ControlledPawn = GetPawn();
+	if (ControlledPawn)
+	{
+		USpringArmComponent* SpringArmComponent = ControlledPawn->FindComponentByClass<USpringArmComponent>();
+		if (SpringArmComponent)
+		{
+			// Successfully retrieved the SpringArmComponent
+			CameraBoom = SpringArmComponent;
+			if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Setup camera boom"))); }
+		}
+	}
+}
+
 void ACustomPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	RotatePlayerToMouse();
+	FHitResult hit = ShootRaycast();
+	RotatePlayerToMouse(hit);
+	CheckPickupObject(hit);
 }
 
-void ACustomPlayerController::RotatePlayerToMouse()
-{
+FHitResult ACustomPlayerController::ShootRaycast() {
 	FHitResult HitResult;
 	GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
+	return HitResult;
+}
 
+void ACustomPlayerController::RotatePlayerToMouse(FHitResult HitResult)
+{
 	if (HitResult.bBlockingHit)
 	{
 		APawn* ControlledPawn = GetPawn();
@@ -42,6 +69,49 @@ void ACustomPlayerController::RotatePlayerToMouse()
 
 			FRotator NewRotation = PlayerDirection.Rotation();
 			ControlledPawn->SetActorRotation(NewRotation);
+		}
+	}
+}
+
+void ACustomPlayerController::CheckPickupObject(FHitResult HitResult) {
+	if (HitResult.bBlockingHit)
+	{
+		// If hitting a different object, remove outline from last one
+		if (lastPickableObject != nullptr) {
+			if ((HitResult.Location - GetPawn()->GetActorLocation()).Length() >= PickupDistance || lastPickableObject != HitResult.GetActor()) {
+				TArray<USceneComponent*> ChildrenComponents;
+				lastPickableObject->GetRootComponent()->GetChildrenComponents(true, ChildrenComponents);
+				for (USceneComponent* ChildComponent : ChildrenComponents)
+				{
+					if (UPrimitiveComponent* PrimitiveComp = Cast<UPrimitiveComponent>(ChildComponent))
+					{
+						// Enable Custom Depth for the component
+						PrimitiveComp->SetRenderCustomDepth(false);
+					}
+				}
+				lastPickableObject = nullptr;
+			}
+		}
+
+		if (Cast<IPickableObject>(HitResult.GetActor()) && Cast<IPickableObject>(HitResult.GetActor())->pickedUp == false) {
+			if ((HitResult.Location - GetPawn()->GetActorLocation()).Length() < PickupDistance)
+			{
+				// store object
+				lastPickableObject = HitResult.GetActor();
+
+				// set outline on object
+				TArray<USceneComponent*> ChildrenComponents;
+				HitResult.GetComponent()->GetChildrenComponents(true, ChildrenComponents);
+
+				for (USceneComponent* ChildComponent : ChildrenComponents)
+				{
+					if (UPrimitiveComponent* PrimitiveComp = Cast<UPrimitiveComponent>(ChildComponent))
+					{
+						// Enable Custom Depth for the component
+						PrimitiveComp->SetRenderCustomDepth(true);
+					}
+				}
+			}
 		}
 	}
 }
@@ -63,8 +133,9 @@ void ACustomPlayerController::SetupInputComponent()
 	{
 		// Setup mouse input events
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACustomPlayerController::WhenMoveInput); 
-		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &ACustomPlayerController::TryAttack); 
-		//if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Binded Action"))); }
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &ACustomPlayerController::TryAttack);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ACustomPlayerController::Interact);
+		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ACustomPlayerController::HandleCameraZoom);
 	}
 	else
 	{
@@ -112,6 +183,15 @@ void ACustomPlayerController::TryAttack(const FInputActionValue& Value)
 	}
 }
 
+void ACustomPlayerController::HandleCameraZoom(const FInputActionValue& Value)
+{
+	if (CameraBoom)
+	{
+		float ZoomValue = Value.Get<float>();
+		CameraBoom->TargetArmLength = FMath::Clamp(CameraBoom->TargetArmLength + ZoomValue * -100.0f, 300.0f, 2000.0f);
+	}
+}
+
 void ACustomPlayerController::WhenMoveInput(const FInputActionValue& Value)
 {
 	//if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("MoveInput"))); }
@@ -121,5 +201,42 @@ void ACustomPlayerController::WhenMoveInput(const FInputActionValue& Value)
 		FVector2D MovementVector = Value.Get<FVector2D>();
 		FVector WorldDirection = FVector(MovementVector.X, MovementVector.Y, 0.f);
 		ControlledPawn->AddMovementInput(WorldDirection, 1.0f, false);
+	}
+}
+
+void ACustomPlayerController::Interact() {
+	if (lastPickableObject != nullptr) {
+		if(lastPickableObject->Implements<UPickableObject>())
+		{
+			IPickableObject::Execute_OnPickUp(lastPickableObject, this);
+			if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Object implements interface"))); }
+		} else
+		{
+			if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Object doesn't implement pickable object interface"))); }
+		}
+	}
+}
+
+void ACustomPlayerController::DropWeapon()
+{
+	if (Weapon != nullptr)
+	{
+		Weapon = nullptr;
+	}
+}
+
+void ACustomPlayerController::SetWeapon(AWeaponComponent* weapon)
+{
+	APawn* ControlledPawn = GetPawn();
+	if (ControlledPawn)
+	{
+		if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find player Pawn"))); }
+		USkeletalMeshComponent* MeshComponent = ControlledPawn->FindComponentByClass<USkeletalMeshComponent>();
+		if (MeshComponent)
+		{
+			if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find player Mesh"))); }
+			FName WeaponAttachSocketName = TEXT("WeaponSocket");
+			weapon->AttachToComponent(MeshComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
+		}
 	}
 }
