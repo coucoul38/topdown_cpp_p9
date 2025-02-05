@@ -63,4 +63,6 @@ protected:
 	void WhenMoveInput(const FInputActionValue& Value);
 
 	void Interact();
+public:
+	void SetWeapon(AWeaponComponent* weapon);
 };

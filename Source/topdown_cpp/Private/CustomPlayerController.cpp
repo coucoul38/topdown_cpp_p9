@@ -194,3 +194,19 @@ void ACustomPlayerController::WhenMoveInput(const FInputActionValue& Value)
 		ControlledPawn->AddMovementInput(WorldDirection, 1.0f, false);
 	}
 }
+
+void ACustomPlayerController::SetWeapon(AWeaponComponent* weapon)
+{
+	APawn* ControlledPawn = GetPawn();
+	if (ControlledPawn)
+	{
+		if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find player Pawn"))); }
+		USkeletalMeshComponent* MeshComponent = ControlledPawn->FindComponentByClass<USkeletalMeshComponent>();
+		if (MeshComponent)
+		{
+			if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find player Mesh"))); }
+			FName WeaponAttachSocketName = TEXT("WeaponSocket");
+			weapon->AttachToComponent(MeshComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
+		}
+	}
+}

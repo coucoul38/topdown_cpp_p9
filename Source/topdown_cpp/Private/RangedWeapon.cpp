@@ -3,6 +3,8 @@
 
 #include "RangedWeapon.h"
 
+#include "CustomPlayerController.h"
+
 void ARangedWeapon::Attack()
 {
 	// Implement the attack logic here
@@ -51,6 +53,7 @@ void ARangedWeapon::OnPickUp_Implementation(ACustomPlayerController* player) {
 	// Implement the pick-up logic here
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Ranged weapon pickup"))); }
 	// add the weapon to the player's inventory or equip it
+	player->SetWeapon(this);
 	pickedUp = true;
 }
 
