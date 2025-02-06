@@ -7,7 +7,6 @@
 #include "GameFramework/PlayerController.h"
 #include "InputMappingContext.h"
 #include "WeaponComponent.h"
-#include "PickableObject.h"
 #include "GameFramework/SpringArmComponent.h"
 
 #include "CustomPlayerController.generated.h"

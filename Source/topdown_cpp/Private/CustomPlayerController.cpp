@@ -24,6 +24,8 @@ void ACustomPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	GetSpringArmComponent();
+
+	//link te hud to the player controller
 }
 
 void ACustomPlayerController::GetSpringArmComponent()
