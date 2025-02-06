@@ -3,6 +3,8 @@
 
 #include "WeaponComponent.h"
 
+#include "CustomPlayerController.h"
+
 // Sets default values
 AWeaponComponent::AWeaponComponent()
 {
@@ -72,6 +74,7 @@ float AWeaponComponent::GetDamage()
 }
 
 void AWeaponComponent::OnPickUp_Implementation(ACustomPlayerController* player) {
+	PlayerOwner = player;
 	// Implement the pick-up logic here
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Weapon pickup"))); }
 	// add the weapon to the player's inventory or equip it

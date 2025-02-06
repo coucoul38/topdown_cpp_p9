@@ -21,6 +21,7 @@ void ARangedWeapon::TryAttack(FVector ShootDirection)
 	}
 	
 	FHitResult HitResult;
+	// FVector StartLocation = PlayerOwner->GetPawn()->GetActorLocation();
 	FVector StartLocation = GetActorLocation();
 
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();

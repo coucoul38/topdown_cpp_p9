@@ -25,6 +25,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	ACustomPlayerController* PlayerOwner;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FString WeaponName;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
