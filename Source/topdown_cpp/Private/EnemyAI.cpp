@@ -116,3 +116,24 @@ void AEnemyAI::SetPatrolPoints()
         PatrolPointsWorld.Add(GetActorTransform().TransformPosition(LocalPoint));
     }
 }
+
+void AEnemyAI::TakeDamage_Implementation(int Damage)
+{
+    IDamageable::TakeDamage_Implementation(Damage);
+    if(Damage <= 0)
+    {
+        return;
+    }
+    CurrentHealth -= Damage;
+    if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("took damage")));};
+}
+
+void AEnemyAI::Heal_Implementation(int HealAmount)
+{
+    IDamageable::Heal_Implementation(HealAmount);
+    if(HealAmount <= 0)
+    {
+        return;
+    }
+    CurrentHealth += HealAmount;
+}

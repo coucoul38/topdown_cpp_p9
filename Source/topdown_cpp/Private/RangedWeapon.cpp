@@ -2,8 +2,9 @@
 
 
 #include "RangedWeapon.h"
-
 #include "CustomPlayerController.h"
+#include "Damageable.h"
+#include "Engine/World.h"
 
 void ARangedWeapon::Attack()
 {
@@ -13,15 +14,30 @@ void ARangedWeapon::Attack()
 
 void ARangedWeapon::TryAttack(FVector ShootDirection)
 {
+	if(CurrentAmmoInMag<=0)
+	{
+		Reload();
+		return;
+	}
+	
 	FHitResult HitResult;
 	FVector StartLocation = GetActorLocation();
-	FVector EndLocation = StartLocation + (ShootDirection * 1000.0f); // Adjust the range as needed
 
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (PlayerController)
+	{
+		PlayerController->GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
+	}
+	FVector MouseLocation = HitResult.Location;
+	//FVector EndLocation = MouseLocation;
+	FVector EndLocation = StartLocation + (ShootDirection * 1000.0f); // Adjust the range as needed
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredActor(this); // Ignore the weapon itself
 
 	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, CollisionParams);
-
+	//Draw the raycast for debugging
+	DrawDebugLine(GetWorld(), StartLocation, HitResult.Location, FColor::Red, false, 1.0f, 0, 1.0f);
+	
 	if (bHit)
 	{
 		// Process the hit result, e.g., apply damage to the hit actor
@@ -29,7 +45,14 @@ void ARangedWeapon::TryAttack(FVector ShootDirection)
 		if (HitActor)
 		{
 			// Apply damage or other effects to the hit actor
-			UE_LOG(LogTemp, Log, TEXT("Hit Actor: %s"), *HitActor->GetName());
+			if(HitActor->Implements<UDamageable>())
+			{
+				IDamageable::Execute_TakeDamage(HitActor, Damage);
+				if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("Damaged %s"), *HitActor->GetName())); }
+			} else
+			{
+				if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Hit %s"), *HitActor->GetName())); }
+			}
 		}
 	}
 	else

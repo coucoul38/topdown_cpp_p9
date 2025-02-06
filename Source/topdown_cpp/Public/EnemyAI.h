@@ -3,13 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Damageable.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/Character.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "EnemyAI.generated.h"
 
 UCLASS()
-class TOPDOWN_CPP_API AEnemyAI : public ACharacter
+class TOPDOWN_CPP_API AEnemyAI : public ACharacter, public IDamageable
 {
 	GENERATED_BODY()
 
@@ -21,6 +22,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
+	int MaxHealth = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
+	int CurrentHealth = 100;
+	
 	UPROPERTY(EditAnywhere)
 	UAIPerceptionComponent* PerceptionComponent;
 
@@ -41,4 +47,8 @@ public:
 	TArray<FVector> PatrolPoints;
 	
 	TArray<FVector> PatrolPointsWorld;
+
+	// Implement IDamageable interface
+	virtual void TakeDamage_Implementation(int Damage) override;
+	virtual void Heal_Implementation(int HealAmount) override;
 };
